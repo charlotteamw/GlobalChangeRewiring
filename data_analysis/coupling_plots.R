@@ -1,12 +1,25 @@
 library(ggplot2)
 library(tidyverse)
 library(patchwork)
+library(knitr)
+library(kableExtra)
 
 df_coupling <- read.csv("coupling_synthesis.csv")
 
 df_coupling$result <- as.factor(df_coupling$result)
 df_coupling$ecosystem <- as.factor(df_coupling$ecosystem)
 df_coupling$stressor <- as.factor(df_coupling$stressor)
+
+
+## Aquatic/Terrestrial Table
+aqu_terr_percentages <- aqu_terr_counts %>%
+  mutate(percentage = n / sum(n) * 100)
+
+names(aqu_terr_percentages) <- c("Aquatic/Terrestrial", "n", "% of Studies")
+
+kable(aqu_terr_percentages, caption = "Percentage of Aquatic and Terrestrial Studies") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
 
 # donut 
 
@@ -122,4 +135,50 @@ stressor_plot <- stressor_plot + theme(plot.margin = margin(l = 10, unit = "mm")
 combined_plot <- ecosystem_plot + stressor_plot + plot_layout(guides = "collect") 
 
 combined_plot
+
+
+
+# Calculate the counts for each combination of ecosystem, stressor, and result
+count_df <- df_coupling %>%
+  group_by(ecosystem, stressor, result) %>%
+  summarize(count = n(), .groups = 'drop')
+
+# Calculate the order for ecosystem and stressor by the number of studies
+ecosystem_order <- count_df %>%
+  group_by(ecosystem) %>%
+  summarize(total_count = sum(count)) %>%
+  arrange(desc(total_count)) %>%
+  mutate(ecosystem = factor(ecosystem, levels = rev(ecosystem)))
+
+stressor_order <- count_df %>%
+  group_by(stressor) %>%
+  summarize(total_count = sum(count)) %>%
+  arrange(desc(total_count)) %>%
+  mutate(stressor = factor(stressor, levels = rev(stressor)))
+
+# Join the order information back to the original count_df
+count_df <- count_df %>%
+  left_join(ecosystem_order, by = "ecosystem") %>%
+  left_join(stressor_order, by = "stressor") %>%
+  arrange(desc(count))  # Arrange in descending order to plot larger bubbles first
+
+# Create the bubble plot with the ordered factors
+bubble_plot <- ggplot(count_df, aes(x = ecosystem, y = stressor, size = count, color = result)) +
+  geom_point() +  # removed alpha for non-translucent bubbles
+  scale_size(range = c(4, 15)) +  # Adjust the size range as needed
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.text.y = element_text(angle = 45, vjust = 1)) +
+  labs(title = "Bubble Plot of Ecosystem, Stressor, and Results",
+       x = "Ecosystem Type",
+       y = "Anthropogenic Pressure",
+       size = "Count",
+       color = "Result") +
+  scale_color_manual(values = c("Decrease" = "steelblue4", "Increase" = "skyblue3", "No change" = "grey71")) +
+  scale_x_discrete(limits = ecosystem_order$ecosystem) +
+  scale_y_discrete(limits = stressor_order$stressor) +
+  guides(size = guide_legend(reverse = TRUE))  # Reverse the legend for bubble sizes
+
+# Print the bubble plot
+print(bubble_plot)
 
