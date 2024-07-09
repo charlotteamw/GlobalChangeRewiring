@@ -26,19 +26,19 @@ end
     a_PC1 = 1.2
     h_PC1 = 0.6
     e_PC1 = 0.7
-    a_PC2 = 1.0
+    a_PC2 = 1.2
     h_PC2 = 0.6
     e_PC2 = 0.7
     m_P = 0.3
     r1 = 2.0
-    K1 = 0.853
+    K1 = 1.1
     r2 = 2.0
     K2 = 2.0
     m_C1 = 0.3
     m_C2 = 0.3
     pref::Function = adapt_pref
     Ω = 0.36
-    ω = 0.36
+    ω = 0.
     noise = 0.001
 end
 
