@@ -31,14 +31,14 @@ end
     e_PC2 = 0.7
     m_P = 0.3
     r1 = 2.0
-    K1 = 1.1
+    K1 = 1.0
     r2 = 2.0
     K2 = 2.0
     m_C1 = 0.3
     m_C2 = 0.3
     pref::Function = adapt_pref
-    Ω = 0.36
-    ω = 0.
+    Ω = 0.0
+    ω = 0.6
     noise = 0.001
 end
 
@@ -139,7 +139,7 @@ end
 
     
 ### Details for all the calculations that follow
-K1_vals = 0.705:0.005:1.4
+K1_vals = 0.745:0.005:1.485
 u0 = [0.8, 0.4, 0.8, 0.4, 0.3]
 p = ModelPar()
 ts = range(0, 2000, length = 2000)  # Time steps
@@ -292,6 +292,7 @@ end
 
 
 coupling_hold= zeros(length(K1_vals), 2)
+
 
 for i=1:length(K1_vals)
     p = ModelPar(K1 = K1_vals[i])
